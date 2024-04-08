@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 // Constructors
 PrefixTree::Node::Node(bool isEnd, char val) {
@@ -92,20 +93,33 @@ bool PrefixTree::findHelper(std::vector<char> wordAsVector, Node* current) {
 }
 
 std::string readFileIntoString(const std::string& path) {
-    std::ifstream
-
+    std::ifstream inputFile(path);
+    if (!inputFile.is_open()){
+        std::cerr << "Error abriendo archivo " << path <<std::endl;
+        return "";
+    }
+    std::stringstream buffer;
+    buffer << inputFile.rdbuf();
+    inputFile.close();
+    return buffer.str();
 }
 
 int main() {
     PrefixTree trie;
     std::string mcode1, transmission1, transmission2;
 
+    mcode1 = readFileIntoString("mcode1.txt");
+    transmission1 = readFileIntoString("transmission1.txt");
+    transmission2 = readFileIntoString("transmission2.txt");
+
+    trie.insert(mcode1);
+
     // Insertar palabras
 
     // Buscar palabras
     std::cout << "Casos de prueba \n Buscando palabras...\n";
 
-    std::cout << "hola: " << (trie.find("hola") ? "Encontrado\n" : "No encontrado\n");
+    std::cout << "hola: " << (trie.find(transmission1) ? "Transmission1 Encontrado\n" : "No encontrado\n");
 
     // Usuario 
     bool isActive = true;
