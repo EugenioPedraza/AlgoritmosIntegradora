@@ -30,25 +30,26 @@ bool PrefixTree::insert(std::string word) {
 // Recursive insert helper
 void PrefixTree::insertHelper(std::vector<char> wordAsVector, Node* current) {
     for (int i = 0; i <  wordAsVector.size(); i++) {
-        auto it = current->children.find(wordAsVector[0]);
+        auto it = current->children.find(wordAsVector[i]);
 
         if (it != current->children.end()){
             // Element found
-            current->children[wordAsVector[i]];
-            continue;
+            current = it->second; // Move to the next node in the tree
         }
         else {
             // Element was not found 
             // Create a new node and set it up
-            Node* newNode = new Node(false, wordAsVector[0]);
+            Node* newNode = new Node(false, wordAsVector[i]);
 
             // Append the new node into the current node's children
             current->children[wordAsVector[i]] = newNode;
-            continue;
+
+            // Move to the next node in the tree
+            current = newNode;
         }
     }
 
-    current->isEnd = true;
+    current->isEnd = true; // Mark the last node as the end of a word
 }
 
 // Find words
@@ -108,7 +109,7 @@ int main() {
     trie.insert(transmission1);
     trie.insert(transmission2);
 
-    std::cout << trie.insert("mcode1");
+    std::cout << trie.find(transmission2);
 
     bool isActive = true;
     PrefixTree userTrie;
