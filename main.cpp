@@ -29,18 +29,13 @@ bool PrefixTree::insert(std::string word) {
 
 // Recursive insert helper
 void PrefixTree::insertHelper(std::vector<char> wordAsVector, Node* current) {
-    if (wordAsVector.empty()) {
-        current->isEnd = true;
-        return;
-    }
-    else {
+    for (int i = 0; i <  wordAsVector.size(); i++) {
         auto it = current->children.find(wordAsVector[0]);
 
         if (it != current->children.end()){
             // Element found
-            std::vector<char>newVect(wordAsVector.begin() + 1, wordAsVector.end());
-
-            return insertHelper(newVect, current->children[wordAsVector[0]]);
+            current->children[wordAsVector[i]];
+            continue;
         }
         else {
             // Element was not found 
@@ -48,14 +43,12 @@ void PrefixTree::insertHelper(std::vector<char> wordAsVector, Node* current) {
             Node* newNode = new Node(false, wordAsVector[0]);
 
             // Append the new node into the current node's children
-            current->children[wordAsVector[0]] = newNode;
-
-            // Recursively call the function with the new node and without the newly added character
-            std::vector<char>newVect(wordAsVector.begin() + 1, wordAsVector.end());
-            return insertHelper(newVect, newNode);
-
+            current->children[wordAsVector[i]] = newNode;
+            continue;
         }
     }
+
+    current->isEnd = true;
 }
 
 // Find words
@@ -115,9 +108,7 @@ int main() {
     trie.insert(transmission1);
     trie.insert(transmission2);
 
-    std::cout << "Casos de prueba \n Buscando palabras...\n";
-
-    std::cout << (trie.find(mcode1) ? "Transmission1 Encontrado\n" : "No encontrado\n");
+    std::cout << trie.insert("mcode1");
 
     bool isActive = true;
     PrefixTree userTrie;
