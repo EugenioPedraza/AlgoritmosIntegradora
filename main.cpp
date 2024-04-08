@@ -110,114 +110,17 @@ int main() {
 
     mcode1 = readFileIntoString("mcode1.txt");
     transmission1 = readFileIntoString("transmission1.txt");
-    transmission2 = readFileIntoString("transmission2.txt");
+    transmission2 = readFileIntoString("transmission2.txt"); 
 
-    trie.insert(mcode1);
+    trie.insert(transmission1);
+    trie.insert(transmission2);
 
-    // Insertar palabras
-
-    // Buscar palabras
     std::cout << "Casos de prueba \n Buscando palabras...\n";
 
-    std::cout << "hola: " << (trie.find(transmission1) ? "Transmission1 Encontrado\n" : "No encontrado\n");
+    std::cout << (trie.find(mcode1) ? "Transmission1 Encontrado\n" : "No encontrado\n");
 
-    // Usuario 
     bool isActive = true;
     PrefixTree userTrie;
-
-    while (isActive) {
-        int action;
-        std::string searchWord;
-
-        std::cout << "Que desea hacer?" << std::endl;
-        std::cout << "1) Agregar palabras" << std::endl;
-        std::cout << "2) Buscar una palabra" << std::endl;
-        std::cout << "3) Salir" << std::endl;
-
-        std::cout << "Seleccion: ";
-        std::cin >> action;
-
-        if(std::cin.fail()) {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            continue;
-        }
-
-        int quantity;
-        int success = 0;
-        int failure = 0;
-        std::vector<std::string> words;
-
-        switch (action)
-        {
-        case 1:
-            std::cout << "Cuantas palabras desea insertar?: ";
-            while(!(std::cin >> quantity)) {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Entrada invalida";
-            }
-
-            printf("Inserte %d palabras de una por una, una vez que haya escrito la palabra, presione enter para continuar, procure no utilizar espacios \n", quantity);
-
-            for (int i = 0; i < quantity; i++) {
-                printf("Palabras restantes: %d \n", quantity - i);
-                std::string input;
-
-                std::getline(std::cin >> std::ws, input);
-
-                while(input.find(' ') != std::string::npos){
-                    std::cout << "La entrada consiste de mas de 1 palabras o contiene un espacio, intente de nuevo" << std::endl;
-                    std::cin >> input;
-                } 
-
-                words.push_back(input);      
-            }
-
-            for (int i = 0; i < words.size(); i++) {
-                bool result = userTrie.insert(words[i]);
-
-                if (result) {
-                    success++;
-                }
-                else {
-                    failure++;
-                }
-            }
-
-            printf("%d palabras fueron agregadas con exito! \n", success);
-            printf("%d palabras no fueron agregadas \n", failure);
-            break;
-
-        case 2:
-            std::cout << "Ingrese la palabra que desea buscar: ";
-
-            std::getline(std::cin >> std::ws, searchWord);
-
-            while(searchWord.find(' ') != std::string::npos){
-                std::cout << "La entrada consiste de mas de 1 palabras o contiene un espacio, intente de nuevo" << std::endl;
-                std::cin >> searchWord;
-            }
-
-            if (userTrie.find(searchWord)) {
-                std::cout << "La palabra '" << searchWord << "' fue encontrada en el trie!" << std::endl;
-            } else {
-                std::cout << "La palabra '" << searchWord << "' no fue encontrada en el trie." << std::endl;
-            }
-
-            break;
-
-        case 3:
-            isActive = false;
-            break;
-
-        default:
-            printf("***La seleccion %d es invalida, intente de nuevo*** \n", action);
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            break;
-        }
-    }
 
 
     return 0;
