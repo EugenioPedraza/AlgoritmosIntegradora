@@ -64,26 +64,23 @@ bool PrefixTree::find(std::string word) {
 
 // Recursive find helper 
 bool PrefixTree::findHelper(std::vector<char> wordAsVector, Node* current) {
-    if (wordAsVector.empty()) {
-        // Base case, the word wasn't found
-        std::cout << "Character -> " << current->val << " found" << std::endl;
-        return current->isEnd;
-    }
-    else {
+    while (!wordAsVector.empty()) {
         auto it = current->children.find(wordAsVector[0]);
 
         if (it != current->children.end()){
             // Element found
-            std::vector<char>newVect(wordAsVector.begin() + 1, wordAsVector.end());
-            if (current->val != ' '){
-                std::cout << "Character -> " << current->val << " found" << std::endl;
-            }
-            return findHelper(newVect, current->children[wordAsVector[0]]);
+            std::vector<char> newVect(wordAsVector.begin() + 1, wordAsVector.end());
+    
+            current = current->children[wordAsVector[0]];
+            wordAsVector = newVect;
         }
-
-        return false;
+        else {
+            return false;
+        }
     }
 
+    // Base case, the word wasn't found
+    return current->isEnd;
 }
 
 std::string readFileIntoString(const std::string& path) {
