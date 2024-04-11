@@ -73,8 +73,8 @@ public:
 
 int main() {
     KMP_Searcher buscador;
-    std::string transmision1 = buscador.readFileIntoString("transmision1.txt");
-    std::string transmision2 = buscador.readFileIntoString("transmision2.txt");
+    std::string transmision1 = buscador.readFileIntoString("transmission1.txt");
+    std::string transmision2 = buscador.readFileIntoString("transmission2.txt");
     std::string mcode1 = buscador.readFileIntoString("mcode1.txt");
 
     bool tr1_mc1 = buscador.KMP_Search(transmision1, mcode1);
