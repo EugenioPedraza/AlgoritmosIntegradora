@@ -31,7 +31,7 @@ private:
     }
 
 public:
-    std::pair<bool,int> KMP_Search(const std::string& text, const std::string& pattern) {
+    std::tuple<bool,int, int> KMP_Search(const std::string& text, const std::string& pattern) {
         std::vector<int> kmpTable = computeKMPTable(pattern);
         int i = 0;
         int j = 0; 
@@ -44,7 +44,7 @@ public:
 
             if (j == pattern.size()) {
 
-                return std::make_pair(true, i-j);
+                return std::make_tuple(true, i-j, i-1);
 
                 j = kmpTable[j - 1];
             } else if (i < text.size() && pattern[j] != text[i]) {
@@ -56,7 +56,7 @@ public:
             }
         }
 
-        return std::make_pair(false, -1); 
+        return std::make_tuple(false, -1, -1); 
     }
 
     
@@ -79,17 +79,19 @@ int main() {
     std::string transmission2 = buscador.readFileIntoString("transmission2.txt");
     std::string mcode1 = buscador.readFileIntoString("mcode1.txt");
 
-    std::pair<bool,int> tr1_mc1 = buscador.KMP_Search(transmission1, mcode1);
-    std::pair<bool, int> tr2_mc1 = buscador.KMP_Search(transmission2, mcode1);
+    std::tuple<bool,int, int> tr1_mc1 = buscador.KMP_Search(transmission1, mcode1);
+    std::tuple<bool, int, int> tr2_mc1 = buscador.KMP_Search(transmission2, mcode1);
 
-    if (tr1_mc1.first) {
-        std::cout << "Mcode1 se encuentra dentro de Transmision1 en la posicion: " << tr1_mc1.second << std::endl;
+    if (std::get<0>(tr1_mc1)) {
+        std::cout << "Mcode1 se encuentra dentro de Transmision1 en la posicion: " 
+                  << std::get<1>(tr1_mc1) << " a " << std::get<2>(tr1_mc1) << std::endl;
     } else {
         std::cout << "Mcode1 no se encuentra dentro de Transmision1" << std::endl;
     }
 
-    if (tr2_mc1.first) {
-        std::cout << "Mcode1 se encuentra dentro de Transmision2 en la posicion: " << tr2_mc1.second << std::endl;
+    if (std::get<0>(tr2_mc1)) {
+        std::cout << "Mcode1 se encuentra dentro de Transmision2 en la posicion: " 
+                  << std::get<1>(tr2_mc1) << " a " << std::get<2>(tr2_mc1) << std::endl;
     } else {
         std::cout << "Mcode1 no se encuentra dentro de Transmision2" << std::endl;
     }
