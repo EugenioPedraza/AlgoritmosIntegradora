@@ -1,23 +1,11 @@
 #include <iostream>
-#include <unordered_map>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
 
-class PrefixTree {
-protected:
-    struct Node {
-        std::unordered_map<char, Node*> children;
-        bool isEnd;
-        char val;
-
-        Node(bool isEnd, char val) : isEnd(isEnd), val(val) {}
-    };
-
-    Node* root;
-
-    // Helper method for KMP Algorithm to compute the longest prefix suffix
+class KMP_Searcher {
+private:
     std::vector<int> computeKMPTable(const std::string& word) {
         int m = word.length();
         std::vector<int> kmpTable(m, 0);
@@ -43,26 +31,10 @@ protected:
     }
 
 public:
-    PrefixTree() : root(new Node(false, ' ')) {}
-
-    // Insert a word into the trie
-    bool insert(std::string word) {
-        Node* current = root;
-        for (char ch : word) {
-            if (!current->children.count(ch)) {
-                current->children[ch] = new Node(false, ch);
-            }
-            current = current->children[ch];
-        }
-        current->isEnd = true;
-        return true;
-    }
-
-    // KMP Search
-    bool KMP_Search(const std::string& text, const std::string& pattern) {
+    std::pair<bool,int> KMP_Search(const std::string& text, const std::string& pattern) {
         std::vector<int> kmpTable = computeKMPTable(pattern);
-        int i = 0; // index for text[]
-        int j = 0; // index for pattern[]
+        int i = 0;
+        int j = 0; 
 
         while (i < text.size()) {
             if (pattern[j] == text[i]) {
@@ -71,7 +43,9 @@ public:
             }
 
             if (j == pattern.size()) {
-                return true; // found pattern
+
+                return std::make_pair(true, i-j);
+
                 j = kmpTable[j - 1];
             } else if (i < text.size() && pattern[j] != text[i]) {
                 if (j != 0) {
@@ -82,10 +56,10 @@ public:
             }
         }
 
-        return false;
+        return std::make_pair(false, -1); 
     }
 
-    // Method to read file content into a string
+    
     std::string readFileIntoString(const std::string& path) {
         std::ifstream inputFile(path);
         if (!inputFile.is_open()) {
@@ -100,13 +74,25 @@ public:
 };
 
 int main() {
-    PrefixTree trie;
-    std::string text = trie.readFileIntoString("transmission1.txt");
-    trie.insert(text);
+    KMP_Searcher buscador;
+    std::string transmission1 = buscador.readFileIntoString("transmission1.txt");
+    std::string transmission2 = buscador.readFileIntoString("transmission2.txt");
+    std::string mcode1 = buscador.readFileIntoString("mcode1.txt");
 
-    std::string pattern = trie.readFileIntoString("mcode1.txt");
-    bool found = trie.KMP_Search(text, pattern);
-    std::cout << (found ? "Pattern found" : "Pattern not found") << std::endl;
+    std::pair<bool,int> tr1_mc1 = buscador.KMP_Search(transmission1, mcode1);
+    std::pair<bool, int> tr2_mc1 = buscador.KMP_Search(transmission2, mcode1);
+
+    if (tr1_mc1.first) {
+        std::cout << "Mcode1 se encuentra dentro de Transmision1 en la posicion: " << tr1_mc1.second << std::endl;
+    } else {
+        std::cout << "Mcode1 no se encuentra dentro de Transmision1" << std::endl;
+    }
+
+    if (tr2_mc1.first) {
+        std::cout << "Mcode1 se encuentra dentro de Transmision2 en la posicion: " << tr2_mc1.second << std::endl;
+    } else {
+        std::cout << "Mcode1 no se encuentra dentro de Transmision2" << std::endl;
+    }
 
     return 0;
 }
