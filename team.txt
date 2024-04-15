@@ -1,0 +1,8 @@
+Sebastian Rosas Maciel - A01233989:
+    -parte 2, algoritmo de manacher
+
+Eugenio Pedraza - MATRICULA:
+    -parte 1, busqueda de coincidencias del archivo mcode
+
+Rodrigo Rodriguez de Luna - MATRICULA:
+    -parte 3, busqueda de coincidencias entre archivos
