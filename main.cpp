@@ -193,9 +193,9 @@ void Algorithm::lcs(std::string trans1, std::string trans2)
 int main() {
     Algorithm buscador;
 
-    std::string transmission1 = buscador.readFileIntoString("transmission1.txt");
-    std::string transmission2 = buscador.readFileIntoString("transmission2.txt");
-    std::string mcode1 = buscador.readFileIntoString("mcode1.txt");
+    std::string transmission1 = buscador.readFileIntoString("transmission1V2.txt");
+    std::string transmission2 = buscador.readFileIntoString("transmission2V2.txt");
+    std::string mcode1 = buscador.readFileIntoString("mcode1V2.txt");
 
     std::cout << "\nParte 1: Busqueda de Mcode dentro de los ashivos de transmicion" << std::endl;
     std::tuple<bool,int, int> tr1_mc1 = buscador.KMP_Search(transmission1, mcode1);
