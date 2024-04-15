@@ -103,10 +103,20 @@ std::pair<int, int> Algorithm::manacher(std::string transmissionText){
             lpsLengthArray[i] = std::min(lpsLengthArray[iMirror], diff);
 
         // Expand palindrome centered at currentRightPosition i
-        while (((i + lpsLengthArray[i]) < stringSize && (i - lpsLengthArray[i]) > 0) && 
-            (((i + lpsLengthArray[i] + 1) % 2 == 0) || 
-            (transmissionText[(i + lpsLengthArray[i] + 1)/2] == transmissionText[(i - lpsLengthArray[i] - 1)/2]))) {
-            lpsLengthArray[i]++;
+        while (((i + lpsLengthArray[i]) < stringSize && (i - lpsLengthArray[i]) > 0)) {
+            int rightIndex = (i + lpsLengthArray[i] + 1)/2;
+            int leftIndex = (i - lpsLengthArray[i] - 1)/2;
+
+            if (rightIndex >= transmissionText.size() || leftIndex < 0) {
+                break;
+            }
+
+            if ((rightIndex + leftIndex) % 2 == 0 || 
+                transmissionText[rightIndex] == transmissionText[leftIndex]) {
+                lpsLengthArray[i]++;
+            } else {
+                break;
+            }
         }
 
         if (lpsLengthArray[i] > maxLPSLength) { // Track maxLPSLength
@@ -122,6 +132,7 @@ std::pair<int, int> Algorithm::manacher(std::string transmissionText){
             centerRightPosition = i + lpsLengthArray[i];
         }
     }
+
     start = (maxLPSCenterPosition - maxLPSLength)/2;
     end = start + maxLPSLength - 1;
     return {start/2, end/2}; // Return the start and end index in the original string

@@ -54,6 +54,7 @@ std::pair<int, int> Algorithm::manacher(std::string transmissionText){
             centerRightPosition = i + lpsLengthArray[i];
         }
     }
+
     start = (maxLPSCenterPosition - maxLPSLength)/2;
     end = start + maxLPSLength - 1;
     return {start/2, end/2}; // Return the start and end index in the original string
@@ -72,9 +73,53 @@ std::pair<int, int> Algorithm::manacher(std::string transmissionText){
         return {-1, -1};
 ```
 Duplicamos el tamaño del string y le sumamos una unidad, esta modificacion sirve para manejar palindromos de longitud par.
-Creamos un vector que se ajuste al nuevo tamaño.
+Creamos un vector que se ajuste al nuevo tamaño, este tamaño contempla la insercion de caracteres especiales.
+
 ```cpp
 stringSize = 2 * stringSize + 1;
 Position count
     std::vector<int> lpsLengthArray(stringSize, 0); // LPS Length Array
+```
+El loop principal itera a travez de cada posicion central posible y crea un **"incide espejeado"**, este indice nos sirve para acceder a longitudes de palindromos calculadas previamente.
+```cpp
+for (i = 2; i < stringSize; i++) {
+    // get currentLeftPosition iMirror for currentRightPosition i
+    iMirror = 2*centerPosition-i;
+    lpsLengthArray[i] = 0;
+    diff = centerRightPosition - i;
+    // If currentRightPosition i is within centerRightPosition R
+    if (diff > 0)
+        lpsLengthArray[i] = std::min(lpsLengthArray[iMirror], diff);
+```
+Se asume que no hay un palindromo en la posicion actual, luego revisamos si la posicion actual se encuentra dentro del palindromo mas largo encontrado hasta ahora.
+```cpp
+    lpsLengthArray[i] = 0;
+    diff = centerRightPosition - i;
+    // If currentRightPosition i is within centerRightPosition R
+    if (diff > 0)
+        lpsLengthArray[i] = std::min(lpsLengthArray[iMirror], diff);
+```
+Si la posicion actual se encuentra dentro del limite del palindromo mas largo encontrado, intentamos expandir el palindromo, para expandir el palindromo:
+- Los indices deben de permanecer dentro de los limites del arreglo
+- Para algoritmos de longitud par, se salta un caracter especial a la mitad del palindromo mediante una operacion con modulo
+- Los caracteres a los lados del centro deben de ser iguales
+```cpp
+while (((i + lpsLengthArray[i]) < stringSize && (i - lpsLengthArray[i]) > 0) && 
+    (((i + lpsLengthArray[i] + 1) % 2 == 0) || 
+    (transmissionText[(i + lpsLengthArray[i] + 1)/2] == transmissionText[(i - lpsLengthArray[i] - 1)/2]))) {
+    lpsLengthArray[i]++;
+}
+```
+Si la longitud del palindromo actual excede la longitud del palindromo mas largo encontrado hasta ahora, se actualiza **maxLPSLength** al igual que **maxLPSCenterPosition** para rastrear al palindromo mas largo.
+```cpp
+if (lpsLengthArray[i] > maxLPSLength) { // Track maxLPSLength
+    maxLPSLength = lpsLengthArray[i];
+    maxLPSCenterPosition = i;
+}
+```
+Cuando el bucle termina, se calculan los índices de inicio y final del palíndromo en base a las variables maxLPSCenterPosition y maxLPSLength y se arrojan los indices obtenidos.
+```cpp
+start = (maxLPSCenterPosition - maxLPSLength)/2;
+end = start + maxLPSLength - 1;
+return {start/2, end/2};
 ```
