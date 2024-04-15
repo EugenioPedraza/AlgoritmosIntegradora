@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include "res.h"
+#include <limits>
 
 // Part 1, find the Mcode file inside transmission text
 std::vector<int> Algorithm::computeKMPTable(const std::string& word) {
@@ -73,70 +74,53 @@ std::string Algorithm::readFileIntoString(const std::string& path) {
 }
 
 // Part 2, look for palindromes 
-std::pair<int, int> Algorithm::manacher(std::string transmissionText){ 
-    int stringSize = transmissionText.size();
+std::pair<int, int> Algorithm::manacher(const std::string &s) {
+    int n = s.size();
+    if (n == 0) return {0, 0};
 
-    if (stringSize == 0)
-        return {-1, -1};
+    // Crear la cadena extendida
+    std::string extended = "#";
+    for (char c : s) {
+        extended += c;
+        extended += '#';
+    }
 
-    stringSize = 2 * stringSize + 1; // Position count
-    std::vector<int> lpsLengthArray(stringSize, 0); // LPS Length Array
-    lpsLengthArray[0] = 0;
-    lpsLengthArray[1] = 1;
-    int centerPosition = 1; // centerPosition
-    int centerRightPosition = 2; // centerRightPosition
-    int i = 0; // currentRightPosition
-    int iMirror; // currentLeftPosition
-    int maxLPSLength = 0;
-    int maxLPSCenterPosition = 0;
-    int start = -1;
-    int end = -1;
-    int diff = -1;
+    n = extended.size();
+    std::vector<int> LPS(n, 0);
+    int center = 0, right = 0;
+    int maxLen = 0, start = 0;
 
-    for (i = 2; i < stringSize; i++) {
-        // get currentLeftPosition iMirror for currentRightPosition i
-        iMirror = 2*centerPosition-i;
-        lpsLengthArray[i] = 0;
-        diff = centerRightPosition - i;
-        // If currentRightPosition i is within centerRightPosition R
-        if (diff > 0)
-            lpsLengthArray[i] = std::min(lpsLengthArray[iMirror], diff);
-
-        // Expand palindrome centered at currentRightPosition i
-        while (((i + lpsLengthArray[i]) < stringSize && (i - lpsLengthArray[i]) > 0)) {
-            int rightIndex = (i + lpsLengthArray[i] + 1)/2;
-            int leftIndex = (i - lpsLengthArray[i] - 1)/2;
-
-            if (rightIndex >= transmissionText.size() || leftIndex < 0) {
-                break;
-            }
-
-            if ((rightIndex + leftIndex) % 2 == 0 || 
-                transmissionText[rightIndex] == transmissionText[leftIndex]) {
-                lpsLengthArray[i]++;
-            } else {
-                break;
-            }
+    for (int i = 0; i < n; i++) {
+        int mirror = 2 * center - i;
+        if (i < right) {
+            LPS[i] = std::min(right - i, LPS[mirror]);
         }
 
-        if (lpsLengthArray[i] > maxLPSLength) { // Track maxLPSLength
-            maxLPSLength = lpsLengthArray[i];
-            maxLPSCenterPosition = i;
+        int a = i + (1 + LPS[i]);
+        int b = i - (1 + LPS[i]);
+        while (a < n && b >= 0 && extended[a] == extended[b]) {
+            LPS[i]++;
+            a++;
+            b--;
         }
 
-        // If palindrome centered at currentRightPosition i 
-        // expand centerRightPosition R,
-        // adjust centerPosition C based on expanded palindrome.
-        if (i + lpsLengthArray[i] > centerRightPosition) {
-            centerPosition = i;
-            centerRightPosition = i + lpsLengthArray[i];
+        if (i + LPS[i] > right) {
+            center = i;
+            right = i + LPS[i];
+        }
+
+        if (LPS[i] > maxLen) {
+            maxLen = LPS[i];
+            start = (i - LPS[i]) / 2; // Ajusta el índice de inicio para la cadena original
         }
     }
 
-    start = (maxLPSCenterPosition - maxLPSLength)/2;
-    end = start + maxLPSLength - 1;
-    return {start/2, end/2}; // Return the start and end index in the original string
+    // Ajusta el índice de fin para la cadena original
+    int end = start + maxLen - 1;
+    
+    return {start, end};
 }
+
 
 // Part 3, find coincidences vbetween transmission files
 std::vector<int> Algorithm::computeLPS(std::string pattern) {
@@ -236,8 +220,11 @@ int main() {
     } else {
         printf("Se encontro codigo espejeado desde el indice %d hasta %d", result.first, result.second);
         std::cout << "\n";
+
+        std::cout << "Palíndromo en transmission1: " << transmission1.substr(result.first, result.second - result.first + 1) << std::endl;
     }
     
+    std::cout << "\n";
     std::pair<int, int> result2 = buscador.manacher(transmission2);
 
     if (result2.first == -1 && result2.second == -1) {
@@ -245,6 +232,7 @@ int main() {
     } else {
         printf("Se encontro codigo espejeado desde el indice %d hasta %d", result2.first, result2.second);
         std::cout << "\n";
+        std::cout << "Palíndromo en transmission2: " << transmission2.substr(result2.first, result2.second - result2.first + 1) << std::endl;
     }
 
     std::cout << "\n";

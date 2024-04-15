@@ -16,7 +16,7 @@ class Algorithm {
     std::tuple<bool,int, int> KMP_Search(const std::string& text, const std::string& pattern);
 
     // Manacher's algorithm, part 2
-    std::pair<int,int> manacher(std::string transmissionText);
+    std::pair<int,int> manacher(const std::string &s);
 
     // LPS, part 3
     std::vector<int> computeLPS(std::string pattern);
