@@ -1,4 +1,3 @@
-
 #include "res.h"
 
 // Part 1, find the Mcode file inside transmission text
@@ -185,11 +184,11 @@ void Algorithm::lcs(std::string trans1, std::string trans2)
 int main() {
     Algorithm buscador;
 
-    std::string transmission1 = buscador.readFileIntoString("transmission1V2.txt");
-    std::string transmission2 = buscador.readFileIntoString("transmission2V2.txt");
-    std::string mcode1 = buscador.readFileIntoString("mcode1V2.txt");
-    std::string mcode2 = buscador.readFileIntoString("mcode1V2.txt");
-    std::string mcode3 = buscador.readFileIntoString("mcode1V2.txt");
+    std::string transmission1 = buscador.readFileIntoString("transmission1.txt");
+    std::string transmission2 = buscador.readFileIntoString("transmission2.txt");
+    std::string mcode1 = buscador.readFileIntoString("mcode1.txt");
+    std::string mcode2 = buscador.readFileIntoString("mcode1.txt");
+    std::string mcode3 = buscador.readFileIntoString("mcode3.txt");
 
     std::cout << "\nParte 1: Busqueda de Mcode dentro de los ashivos de transmicion" << std::endl;
     // MCode 1
