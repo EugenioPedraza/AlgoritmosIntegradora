@@ -1,10 +1,5 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <fstream>
-#include <sstream>
+
 #include "res.h"
-#include <limits>
 
 // Part 1, find the Mcode file inside transmission text
 std::vector<int> Algorithm::computeKMPTable(const std::string& word) {
@@ -193,10 +188,21 @@ int main() {
     std::string transmission1 = buscador.readFileIntoString("transmission1V2.txt");
     std::string transmission2 = buscador.readFileIntoString("transmission2V2.txt");
     std::string mcode1 = buscador.readFileIntoString("mcode1V2.txt");
+    std::string mcode2 = buscador.readFileIntoString("mcode1V2.txt");
+    std::string mcode3 = buscador.readFileIntoString("mcode1V2.txt");
 
     std::cout << "\nParte 1: Busqueda de Mcode dentro de los ashivos de transmicion" << std::endl;
+    // MCode 1
     std::tuple<bool,int, int> tr1_mc1 = buscador.KMP_Search(transmission1, mcode1);
     std::tuple<bool, int, int> tr2_mc1 = buscador.KMP_Search(transmission2, mcode1);
+
+    // MCode 2
+    std::tuple<bool,int, int> tr1_mc2 = buscador.KMP_Search(transmission1, mcode2);
+    std::tuple<bool, int, int> tr2_mc2 = buscador.KMP_Search(transmission2, mcode2);
+
+    // MCode 3
+    std::tuple<bool,int, int> tr1_mc3 = buscador.KMP_Search(transmission1, mcode3);
+    std::tuple<bool, int, int> tr2_mc3 = buscador.KMP_Search(transmission2, mcode3);
 
     if (std::get<0>(tr1_mc1)) {
         std::cout << "Mcode1 se encuentra dentro de Transmision1 en la posicion: " 
@@ -212,27 +218,56 @@ int main() {
         std::cout << "Mcode1 no se encuentra dentro de Transmision2" << std::endl;
     }
 
+    if (std::get<0>(tr1_mc2)) {
+        std::cout << "Mcode2 se encuentra dentro de Transmision1 en la posicion: " 
+                  << std::get<1>(tr1_mc2) << " a " << std::get<2>(tr1_mc2) << std::endl;
+    } else {
+        std::cout << "Mcode2 no se encuentra dentro de Transmision1" << std::endl;
+    }
+
+    if (std::get<0>(tr2_mc2)) {
+        std::cout << "Mcode2 se encuentra dentro de Transmision2 en la posicion: " 
+                  << std::get<1>(tr2_mc2) << " a " << std::get<2>(tr2_mc2) << std::endl;
+    } else {
+        std::cout << "Mcode2 no se encuentra dentro de Transmision2" << std::endl;
+    }
+
+    if (std::get<0>(tr1_mc3)) {
+        std::cout << "Mcode3 se encuentra dentro de Transmision1 en la posicion: " 
+                  << std::get<1>(tr1_mc3) << " a " << std::get<2>(tr1_mc3) << std::endl;
+    } else {
+        std::cout << "Mcode3 no se encuentra dentro de Transmision1" << std::endl;
+    }
+
+    if (std::get<0>(tr2_mc1)) {
+        std::cout << "Mcode3 se encuentra dentro de Transmision2 en la posicion: " 
+                  << std::get<1>(tr2_mc3) << " a " << std::get<2>(tr2_mc3) << std::endl;
+    } else {
+        std::cout << "Mcode3 no se encuentra dentro de Transmision2" << std::endl;
+    }
+
+    // Parte 2
     std::cout << "\nParte 2: Busqueda de codigo espejeado" << std::endl;
     std::pair<int, int> result = buscador.manacher(transmission1);
 
     if (result.first == -1 && result.second == -1) {
-        std::cout << "No se ha encontrado codigo espejeado" << std::endl;
+        std::cout << "No se ha encontrado codigo espejeado en transmission1" << std::endl;
     } else {
-        printf("Se encontro codigo espejeado desde el indice %d hasta %d", result.first, result.second);
+        printf("Se encontro codigo espejeado en transmission1 desde el indice %d hasta %d", result.first, result.second);
         std::cout << "\n";
 
-        std::cout << "Palíndromo en transmission1: " << transmission1.substr(result.first, result.second - result.first + 1) << std::endl;
+        // std::cout << "Palíndromo en transmission1: " << transmission1.substr(result.first, result.second - result.first + 1) << std::endl;
     }
     
     std::cout << "\n";
     std::pair<int, int> result2 = buscador.manacher(transmission2);
 
     if (result2.first == -1 && result2.second == -1) {
-        std::cout << "No se ha encontrado codigo espejeado" << std::endl;
+        std::cout << "No se ha encontrado codigo espejeado en transmission2" << std::endl;
     } else {
-        printf("Se encontro codigo espejeado desde el indice %d hasta %d", result2.first, result2.second);
+        printf("Se encontro codigo espejeado en transmission2 desde el indice %d hasta %d", result2.first, result2.second);
         std::cout << "\n";
-        std::cout << "Palíndromo en transmission2: " << transmission2.substr(result2.first, result2.second - result2.first + 1) << std::endl;
+        // std::cout << "Palíndromo en transmission2: " << transmission2.substr(result2.first, result2.second - result2.first + 1) << std::endl;
     }
 
     std::cout << "\n";

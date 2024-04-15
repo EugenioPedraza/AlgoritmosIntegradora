@@ -128,3 +128,8 @@ Finalmente, se calcula el índice de fin del palíndromo más largo en la cadena
 int end = start + maxLen - 1;
 return {start, end};
 ```
+
+## Relfexión
+Durante la resolucion de este reto, aprendi que homologar procesos no es neceariamente la accion correcta a tomar al momento de resolver varios problemas, ya que encomendar multiples acciones a una sola estructura no siempre es la tarea mas sencilla, mucho menos la mas eficiente.
+
+Es por esto que idealmente, deberiamos de buscar cual es la solucion mas eficiente a un problema, y de ser posible, intentar complermentarla con la estructura que tengamos como base (si aplica).

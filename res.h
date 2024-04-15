@@ -3,6 +3,8 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <tuple>
+
 
 class Algorithm {
     private:
