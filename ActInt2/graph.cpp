@@ -135,6 +135,105 @@ int Graph::edmondsKarp() {
     return maxFlow;
 }
 
+/// MARK: - Voronoi, parte 4
+// 1. Obtener los centroides
+std::pair<float, float> Graph::getCenterPoint(std::pair<float, float> pointA, std::pair<float, float> pointB) {
+    float x = (pointA.first + pointB.first) / 2;
+    float y = (pointA.second + pointB.second) / 2;
+
+    return {x, y};
+}    
+
+// 2. Obtener la pendiente
+double Graph::getSlope(std::pair<float, float> pointA, std::pair<float, float> pointB) {
+    return (pointB.second - pointA.second) / (pointB.first - pointA.first);
+}
+
+// 3. Calcular la mediatriz
+std::pair<double, double> Graph::getMediatrix(std::pair<float, float> pointA, std::pair<float, float> pointB) {
+    std::pair<float, float> center = getCenterPoint(pointA, pointB);
+    double slope = getSlope(pointA, pointB);
+
+    double perpendicularSlope = -1 / slope;
+    double yIntercept = center.second - perpendicularSlope * center.first;
+
+    return {perpendicularSlope, yIntercept};
+}
+
+// 4. Calcular la intersección
+std::pair<float, float> Graph::getIntersection(std::pair<float, float> lineA, std::pair<float, float> lineB) {
+    // Verificar si las líneas son paralelas
+    if (lineA.first == lineB.first) {
+        // Líneas paralelas, no hay intersección
+        return {-1, -1}; // Otra forma de indicar que no hay intersección
+    }
+    float x = (lineB.second - lineA.second) / (lineA.first - lineB.first);
+    float y = lineA.first * x + lineA.second;
+
+    return {x, y};
+}
+
+// 5. Consultar el área de Voronoi
+bool Graph::rayCast(const std::vector<std::pair<float, float>>& polygon, std::pair<float, float> intersection) {
+    bool inside = false;
+    int n = polygon.size();
+
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+        if (((polygon[i].second > intersection.second) != (polygon[j].second > intersection.second)) &&
+            (intersection.first < (polygon[j].first - polygon[i].first) * (intersection.second - polygon[i].second) / (polygon[j].second - polygon[i].second) + polygon[i].first)) {
+            inside = !inside;
+        }
+    }
+
+    return inside;
+}
+
+
+
+// 6. Calcular el área de Voronoi
+void Graph::voronoi() {
+    // Ordenamos los puntos en sentido horario
+    for (const auto& point : coordinates) {
+        std::cout << "(" << point.first << ", " << point.second << ")" << std::endl;
+    }
+
+    // Calculamos las mediatrices
+    std::vector<std::pair<double, double>> mediatrixes;
+    for (int i = 0; i < coordinates.size(); ++i) {
+        for (int j = i + 1; j < coordinates.size(); ++j) {
+            mediatrixes.push_back(getMediatrix(coordinates[i], coordinates[j]));
+        }
+    }
+
+    // Calculamos las intersecciones
+    std::vector<std::pair<float, float>> intersections;
+    for (int i = 0; i < mediatrixes.size(); ++i) {
+        for (int j = i + 1; j < mediatrixes.size(); ++j) {
+            intersections.push_back(getIntersection(mediatrixes[i], mediatrixes[j]));
+        }
+    }
+
+    for (const auto& intersection : intersections) {
+        std::cout << "Intersección: (" << intersection.first << ", " << intersection.second << ")" << std::endl;
+    }
+}
+
+/// MARK: - Sort coordinates clockwise
+void Graph::sortCoordinates(std::vector<std::pair<float, float>>& coordinates) {
+    float centroidX = 0, centroidY = 0;
+    for (const auto& point : coordinates) {
+        centroidX += point.first;
+        centroidY += point.second;
+    }
+    centroidX /= coordinates.size();
+    centroidY /= coordinates.size();
+
+    std::sort(coordinates.begin(), coordinates.end(),
+              [centroidX, centroidY](const std::pair<float, float>& a, const std::pair<float, float>& b) {
+                  return atan2(a.second - centroidY, a.first - centroidX) > atan2(b.second - centroidY, b.first - centroidX);
+              });
+}
+
 /// MARK: - Función para imprimir la matriz de adyacencia
 void Graph::printMatrix() {
     for (auto row : adjMatrix) {
@@ -216,6 +315,7 @@ int main() {
     g.readFromFile("in.txt");
     g.kruskalMST();
     g.printMatrix();
+    g.voronoi();
 
     std::cout << "Flujo máximo: " << g.edmondsKarp() << std::endl;
 

@@ -43,6 +43,28 @@ public:
 
     void readFromFile(std::string filename);
 
+    // Voronoi
+    // 1. Obtener los centroides
+    std::pair<float, float> getCenterPoint(std::pair<float, float> pointA, std::pair<float, float> pointB); 
+
+    // 2. Obtener la pendiente 
+    double getSlope(std::pair<float, float> pointA, std::pair<float, float> pointB);
+
+    // 3. Calcular la mediatriz
+    std::pair<double, double> getMediatrix(std::pair<float, float> pointA, std::pair<float, float> pointB);
+
+    // 4. Calcular la intersección
+    std::pair<float, float> getIntersection(std::pair<float, float> lineA, std::pair<float, float> lineB);
+
+    // 5. Consultar el área de Voronoi
+    bool rayCast(const std::vector<std::pair<float, float>>& polygon, std::pair<float, float> intersection);
+
+    // 6. Calcular el área de Voronoi
+    void voronoi();
+
+    // HELPER: Sort coordinates clockwise
+    void sortCoordinates(std::vector<std::pair<float, float>>& coordinates);
+
 private:
     int find(std::vector<int>& parent, int i);
     void unionSets(std::vector<int>& parent, std::vector<int>& rank, int x, int y);
