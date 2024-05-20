@@ -21,7 +21,6 @@ struct Edge {
 // Clase para representar el grafo
 class Graph {
 private:
-    std::vector<std::vector<int>> adjMatrix, directedGraph;
     std::vector<Edge> edges;
     int vertexCount;
 
@@ -29,6 +28,7 @@ private:
     std::vector<std::pair<float, float>> coordinates;
 
 public:
+    std::vector<std::vector<int>> adjMatrix, directedGraph;
     // Constructor
     Graph(int vertexCount);
 

@@ -3,47 +3,50 @@
 #include "graph.h"
 #include <algorithm>
 #include <iostream> 
+
+using namespace std;
+
 struct PairFloatComparator {
-    bool operator()(const std::pair<float, float>& a, const std::pair<float, float>& b) const {
+    bool operator()(const pair<float, float>& a, const pair<float, float>& b) const {
         float epsilon = 0.0001f; // or a suitable small number
-        return std::abs(a.first - b.first) < epsilon && std::abs(a.second - b.second) < epsilon;
+        return abs(a.first - b.first) < epsilon && abs(a.second - b.second) < epsilon;
     }
 
-    std::size_t operator()(const std::pair<float, float>& a) const {
-        auto h1 = std::hash<float>{}(a.first);
-        auto h2 = std::hash<float>{}(a.second);
+    size_t operator()(const pair<float, float>& a) const {
+        auto h1 = hash<float>{}(a.first);
+        auto h2 = hash<float>{}(a.second);
         return h1 ^ h2;
     }
 };
 
-bool operator==(const std::pair<float, float>& a, const std::pair<float, float>& b) {
+bool operator==(const pair<float, float>& a, const pair<float, float>& b) {
     float epsilon = 0.0001f; // or a suitable small number
-    return std::abs(a.first - b.first) < epsilon && std::abs(a.second - b.second) < epsilon;
+    return abs(a.first - b.first) < epsilon && abs(a.second - b.second) < epsilon;
 }
 
 // Constructor
 Graph::Graph(int vertexCount) {
     this->vertexCount = vertexCount;
 
-    adjMatrix.resize(vertexCount, std::vector<int>(vertexCount, 0));
-    directedGraph.resize(vertexCount, std::vector<int>(vertexCount, 0));
+    adjMatrix.resize(vertexCount, vector<int>(vertexCount, 0));
+    directedGraph.resize(vertexCount, vector<int>(vertexCount, 0));
 }
 
-void Graph::addEdge(int row, int column, int weight, std::vector<std::vector<int>> &matrix) {
+void Graph::addEdge(int row, int column, int weight, vector<vector<int>> &matrix) {
     matrix[row][column] = weight;
     matrix[column][row] = weight;
     edges.push_back({row, column, weight});
 }
 
 // Función para encontrar el conjunto de un elemento i 
-int Graph::find(std::vector<int>& parent, int i) {
+int Graph::find(vector<int>& parent, int i) {
     if (parent[i] != i)
         parent[i] = find(parent, parent[i]);
     return parent[i];
 }
 
 // Función para unir dos conjuntos x e y 
-void Graph::unionSets(std::vector<int>& parent, std::vector<int>& rank, int x, int y) {
+void Graph::unionSets(vector<int>& parent, vector<int>& rank, int x, int y) {
     int rootX = find(parent, x);
     int rootY = find(parent, y);
 
@@ -60,16 +63,16 @@ void Graph::unionSets(std::vector<int>& parent, std::vector<int>& rank, int x, i
 /// MARK: - Kruskal, parte 1
 // Algoritmo de Kruskal para encontrar el MST
 void Graph::kruskalMST() {
-    std::vector<Edge> result;
+    vector<Edge> result;
     int mstWeight = 0;
 
     // Ordenar las aristas por peso
-    std::sort(edges.begin(), edges.end(), [](Edge a, Edge b) {
+    sort(edges.begin(), edges.end(), [](Edge a, Edge b) {
         return a.weight < b.weight;
     });
 
-    std::vector<int> parent(vertexCount);
-    std::vector<int> rank(vertexCount, 0);
+    vector<int> parent(vertexCount);
+    vector<int> rank(vertexCount, 0);
 
     // Inicializar los conjuntos disjuntos
     for (int v = 0; v < vertexCount; ++v)
@@ -86,17 +89,17 @@ void Graph::kruskalMST() {
         }
     }
 
-    std::cout << "Costo=" << mstWeight << std::endl;
+    cout << "Costo=" << mstWeight << endl;
     for (const auto& edge : result) {
-        std::cout << char('A' + edge.src) << "-" << char('A' + edge.dest) << std::endl;
+        cout << char('A' + edge.src) << "-" << char('A' + edge.dest) << endl;
     }
 }
 
 /// MARK: - Algoritmo de Edmonds Karp, parte 3
-int Graph::bfs(std::vector<std::vector<int>>& rGraph, int s, int t, std::vector<int>& parent) {
+int Graph::bfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& parent) {
     // Checlist to check if a node has already been visited, all fields are initialized to false
-    std::vector<bool> visited(rGraph.size(), false);
-    std::queue<int> q;
+    vector<bool> visited(rGraph.size(), false);
+    queue<int> q;
 
     q.push(s);
     visited[s] = true;
@@ -124,8 +127,8 @@ int Graph::bfs(std::vector<std::vector<int>>& rGraph, int s, int t, std::vector<
 }
 
 int Graph::edmondsKarp() {
-    std::vector<std::vector<int>> rGraph = directedGraph;
-    std::vector<int> parent(vertexCount);
+    vector<vector<int>> rGraph = directedGraph;
+    vector<int> parent(vertexCount);
     int maxFlow = 0;
 
     // Use the first node as the source and the last node as the sink
@@ -133,11 +136,11 @@ int Graph::edmondsKarp() {
     int sink = vertexCount - 1;
 
     while (bfs(rGraph, source, sink, parent)) {
-        int pathFlow = std::numeric_limits<int>::max();
+        int pathFlow = numeric_limits<int>::max();
 
         for (int v = sink; v != source; v = parent[v]) {
             int u = parent[v];
-            pathFlow = std::min(pathFlow, rGraph[u][v]);
+            pathFlow = min(pathFlow, rGraph[u][v]);
         }
 
         for (int v = sink; v != source; v = parent[v]) {
@@ -154,7 +157,7 @@ int Graph::edmondsKarp() {
 
 /// MARK: - Voronoi, parte 4
 // 1. Obtener los centroides
-std::pair<float, float> Graph::getCenterPoint(std::pair<float, float> pointA, std::pair<float, float> pointB) {
+pair<float, float> Graph::getCenterPoint(pair<float, float> pointA, pair<float, float> pointB) {
     float x = (pointA.first + pointB.first) / 2;
     float y = (pointA.second + pointB.second) / 2;
 
@@ -162,13 +165,13 @@ std::pair<float, float> Graph::getCenterPoint(std::pair<float, float> pointA, st
 }    
 
 // 2. Obtener la pendiente
-double Graph::getSlope(std::pair<float, float> pointA, std::pair<float, float> pointB) {
+double Graph::getSlope(pair<float, float> pointA, pair<float, float> pointB) {
     return (pointB.second - pointA.second) / (pointB.first - pointA.first);
 }
 
 // 3. Calcular la mediatriz
-std::pair<double, double> Graph::getMediatrix(std::pair<float, float> pointA, std::pair<float, float> pointB) {
-    std::pair<float, float> center = getCenterPoint(pointA, pointB);
+pair<double, double> Graph::getMediatrix(pair<float, float> pointA, pair<float, float> pointB) {
+    pair<float, float> center = getCenterPoint(pointA, pointB);
     double slope = getSlope(pointA, pointB);
 
     double perpendicularSlope = -1 / slope;
@@ -178,7 +181,7 @@ std::pair<double, double> Graph::getMediatrix(std::pair<float, float> pointA, st
 }
 
 // 4. Calcular la intersección
-std::pair<float, float> Graph::getIntersection(std::pair<float, float> lineA, std::pair<float, float> lineB) {
+pair<float, float> Graph::getIntersection(pair<float, float> lineA, pair<float, float> lineB) {
     // Verificar si las líneas son paralelas
     if (lineA.first == lineB.first) {
         // Líneas paralelas, no hay intersección
@@ -203,7 +206,7 @@ float Graph::roundToTwoDecimals(float var) {
 // 6. Calcular el área de Voronoi
 void Graph::voronoi() {
     // Calculamos las mediatrices
-    std::vector<std::pair<double, double>> mediatrixes;
+    vector<pair<double, double>> mediatrixes;
     for (int i = 0; i < coordinates.size(); ++i) {
         for (int j = i + 1; j < coordinates.size(); ++j) {
             mediatrixes.push_back(getMediatrix(coordinates[i], coordinates[j]));
@@ -211,26 +214,26 @@ void Graph::voronoi() {
     }
 
     // Calculamos las intersecciones
-    std::vector<std::pair<float, float>> intersections;
+    vector<pair<float, float>> intersections;
     for (int i = 0; i < mediatrixes.size(); ++i) {
         for (int j = i + 1; j < mediatrixes.size(); ++j) {
             intersections.push_back(getIntersection(mediatrixes[i], mediatrixes[j]));
         }
     }
 
-    std::sort(coordinates.begin(), coordinates.end());
+    sort(coordinates.begin(), coordinates.end());
     
 
     // Ordenamos las intersecciones según su distancia al punto medio entre dos puntos
-    std::sort(intersections.begin(), intersections.end(), [&](const auto& a, const auto& b) {
+    sort(intersections.begin(), intersections.end(), [&](const auto& a, const auto& b) {
         double distA = distanceToMidpoint(a, coordinates);
         double distB = distanceToMidpoint(b, coordinates);
         return distA < distB;
     });
 
-    std::pair<float, float> pivot = findCenter(coordinates);
+    pair<float, float> pivot = findCenter(coordinates);
 
-    std::vector<std::pair<float, float>> filteredIntersections;
+    vector<pair<float, float>> filteredIntersections;
     for (const auto& intersection : intersections) {
         double distToPivot = distance(intersection, pivot);
         if (distToPivot < 10.0) { // Ajusta este valor según tu criterio
@@ -239,7 +242,7 @@ void Graph::voronoi() {
     }
 
     // Almacena las intersecciones filtradas en una estructura de datos, como un mapa
-    std::map<std::pair<float, float>, int> voronoiPolygons;
+    map<pair<float, float>, int> voronoiPolygons;
     for (const auto& intersection : filteredIntersections) {
         voronoiPolygons[intersection] += 1;
     }
@@ -247,16 +250,16 @@ void Graph::voronoi() {
     // Imprime las intersecciones filtradas
     for (auto element:voronoiPolygons) {
         if (element.second >= 3) {
-            std::cout << "(" << element.first.first << ", " << element.first.second << ") " << element.second << std::endl;
+            cout << "(" << element.first.first << ", " << element.first.second << ") " << element.second << endl;
         }
     }
 }
 
 
 /// MARK: - Remove duplicates
-void Graph::removeDuplicates(std::vector<std::pair<float, float>>& coordinates) {
-    std::sort(coordinates.begin(), coordinates.end());
-    coordinates.erase(std::unique(coordinates.begin(), coordinates.end(), PairFloatComparator()), coordinates.end());
+void Graph::removeDuplicates(vector<pair<float, float>>& coordinates) {
+    sort(coordinates.begin(), coordinates.end());
+    coordinates.erase(unique(coordinates.begin(), coordinates.end(), PairFloatComparator()), coordinates.end());
 }
 
 /// MARK: - Función para imprimir la matriz de adyacencia
@@ -264,82 +267,82 @@ void Graph::printMatrix() {
     for (auto row : adjMatrix) {
         for (auto column : row) {
             if (column == 0)
-                std::cout << "0 ";
+                cout << "0 ";
             else
-                std::cout << column << " ";
+                cout << column << " ";
         }
 
-        std::cout << std::endl;
+        cout << endl;
     }
 }
 
 
 /// MARK: - Read from file function
-void Graph::readFromFile(std::string filename) {
-    std::cout << "Leyendo archivo " << filename << std::endl;
-    std::ifstream input(filename);
-    std::string line;
+void Graph::readFromFile(string filename) {
+    cout << "Leyendo archivo " << filename << endl;
+    ifstream input(filename);
+    string line;
 
-    std::queue<std::vector<std::vector<int>>*> matrixQueue;
+    queue<vector<vector<int>>*> matrixQueue;
     matrixQueue.push(&adjMatrix);
     matrixQueue.push(&directedGraph);
 
     if (input.is_open()) {
         int counter = 0;
-        while (std::getline(input, line)) {
+        while (getline(input, line)) {
             counter++;
 
             if (line.empty()) {
                 counter = 0;
                 matrixQueue.pop();
 
-                std::cout << std::endl;
+                cout << endl;
 
                 continue;
             }
 
             if (matrixQueue.empty()) {
-                std::istringstream iss(line);
+                istringstream iss(line);
                 int first, second;
                 char extraCharacters;
 
                 if (iss >> extraCharacters >> first >> extraCharacters >> second >> extraCharacters) {
-                    std::cout << "(" << first << "," << second << ")" << std::endl;
+                    cout << "(" << first << "," << second << ")" << endl;
                     coordinates.push_back({first, second});
                 } else {
-                    std::cerr << "Error al leer el archivo" << std::endl;
+                    cerr << "Error al leer el archivo" << endl;
                 }
 
             } else {
-                std::istringstream iss(line);
-                std::vector<int> row;
+                istringstream iss(line);
+                vector<int> row;
                 int value;
 
                 while (iss >> value) {
-                    std::cout << value << " ";
+                    cout << value << " ";
                     row.push_back(value);
                 }
 
                 for (int i = 0; i < row.size(); ++i) {
-                    if (row[i] != 0 && row[i] != std::numeric_limits<int>::max()) {
+                    if (row[i] != 0 && row[i] != numeric_limits<int>::max()) {
                         addEdge(counter - 1, i, row[i], *matrixQueue.front());
                     }
                 }
 
-                std::cout << std::endl;
+                cout << endl;
             }
         }
     } else {
-        std::cerr << "Error al abrir el archivo" << std::endl;
+        cerr << "Error al abrir el archivo" << endl;
     }
 }
 
-bool Graph::isInside(const std::vector<std::pair<float, float>>& polygon, std::pair<float, float> point) {
+bool Graph::isInside(const vector<pair<float, float>>& polygon, pair<float, float> point) {
     int n = polygon.size();
     if (n < 3) return false;  // A polygon must have at least 3 vertices
 
     // Create a point for line segment from p to infinite
-    std::pair<float, float> extreme = {INT_MAX, point.second};
+    pair<float, float> extreme = {INT_MAX, point.second};
 
     // Count intersections of the above line with sides of polygon
     int count = 0, i = 0;
@@ -364,10 +367,10 @@ bool Graph::isInside(const std::vector<std::pair<float, float>>& polygon, std::p
     return count & 1;
 }
 
-std::pair<float, float> Graph::findCenter(std::vector<std::pair<float, float>> coordinates) {
+pair<float, float> Graph::findCenter(vector<pair<float, float>> coordinates) {
     for (int i = 0; i < coordinates.size(); ++i) {
         // Create a polygon without the i-th point
-        std::vector<std::pair<float, float>> polygon;
+        vector<pair<float, float>> polygon;
         for (int j = 0; j < coordinates.size(); ++j) {
             if (j != i) {
                 polygon.push_back(coordinates[j]);
@@ -384,9 +387,9 @@ std::pair<float, float> Graph::findCenter(std::vector<std::pair<float, float>> c
     return {-1, -1};
 }
 // Given three colinear points p, q, r, the function checks if point q lies on line segment 'pr'
-bool Graph::onSegment(std::pair<float, float> p, std::pair<float, float> q, std::pair<float, float> r) {
-    if (q.first <= std::max(p.first, r.first) && q.first >= std::min(p.first, r.first) &&
-        q.second <= std::max(p.second, r.second) && q.second >= std::min(p.second, r.second))
+bool Graph::onSegment(pair<float, float> p, pair<float, float> q, pair<float, float> r) {
+    if (q.first <= max(p.first, r.first) && q.first >= min(p.first, r.first) &&
+        q.second <= max(p.second, r.second) && q.second >= min(p.second, r.second))
         return true;
     return false;
 }
@@ -396,14 +399,14 @@ bool Graph::onSegment(std::pair<float, float> p, std::pair<float, float> q, std:
 // 0 --> p, q and r are colinear
 // 1 --> Clockwise
 // 2 --> Counterclockwise
-int Graph::orientation(std::pair<float, float> p, std::pair<float, float> q, std::pair<float, float> r) {
+int Graph::orientation(pair<float, float> p, pair<float, float> q, pair<float, float> r) {
     float val = (q.second - p.second) * (r.first - q.first) - (q.first - p.first) * (r.second - q.second);
     if (val == 0) return 0;  // colinear
     return (val > 0) ? 1 : 2; // clock or counterclock wise
 }
 
 // The function that returns true if line segment 'p1q1' and 'p2q2' intersect.
-bool Graph::doIntersect(std::pair<float, float> p1, std::pair<float, float> q1, std::pair<float, float> p2, std::pair<float, float> q2) {
+bool Graph::doIntersect(pair<float, float> p1, pair<float, float> q1, pair<float, float> p2, pair<float, float> q2) {
     // Find the four orientations needed for general and special cases
     int o1 = orientation(p1, q1, p2);
     int o2 = orientation(p1, q1, q2);
@@ -430,11 +433,11 @@ bool Graph::doIntersect(std::pair<float, float> p1, std::pair<float, float> q1, 
     return false; // Doesn't fall in any of the above cases
 }
 
-double Graph::distanceToMidpoint(const std::pair<float, float>& point, const std::vector<std::pair<float, float>>& points) {
-    double minDistance = std::numeric_limits<double>::max();
+double Graph::distanceToMidpoint(const pair<float, float>& point, const vector<pair<float, float>>& points) {
+    double minDistance = numeric_limits<double>::max();
     for (int i = 0; i < points.size(); ++i) {
         for (int j = i + 1; j < points.size(); ++j) {
-            std::pair<float, float> midpoint = getCenterPoint(points[i], points[j]);
+            pair<float, float> midpoint = getCenterPoint(points[i], points[j]);
             double dist = distance(point, midpoint);
             if (dist < minDistance) {
                 minDistance = dist;
@@ -444,21 +447,132 @@ double Graph::distanceToMidpoint(const std::pair<float, float>& point, const std
     return minDistance;
 }
 
-double Graph::distance(const std::pair<float, float>& p1, const std::pair<float, float>& p2) {
+double Graph::distance(const pair<float, float>& p1, const pair<float, float>& p2) {
     float dx = p2.first - p1.first;
     float dy = p2.second - p1.second;
     return sqrt(dx * dx + dy * dy);
+}
+
+//TSP
+const int INF = numeric_limits<int>::max();
+
+class TSP {
+private:
+    vector<vector<int>> matriz;
+    int n;
+    vector<bool> visitado;
+    vector<int> ruta;
+    int costoMinimo;
+    vector<int> rutaFinal;
+
+public:
+    TSP(const vector<vector<int>>& adj_matriz) : matriz(adj_matriz), n(adj_matriz.size()), visitado(n, false), ruta(), costoMinimo(INF), rutaFinal() {}
+
+    void tsp_branch_and_bound() {
+        visitado[0] = true;
+        ruta.push_back(0);
+        tspSolucion(0, 0, 1);
+    }
+
+    //Complejidad O(N!)
+    void tspSolucion(int curr_bound, int curr_weight, int level) {
+        if (level == n) {
+            if (matriz[ruta[level - 1]][ruta[0]] != 0) { // se comprueba que la ruta es valida
+                int curr_res = curr_weight + matriz[ruta[level - 1]][ruta[0]];
+                if (curr_res < costoMinimo) {
+                    costoMinimo = curr_res;
+                    rutaFinal = ruta;
+                    rutaFinal.push_back(0); // Regresar al nodo inicial
+                }
+            }
+            return;
+        }
+
+        // Calcular el l�mite inferior para el siguiente nivel
+        for (int i = 0; i < n; ++i) {
+            if (!visitado[i]) {
+                int min1 = INF, min2 = INF;
+                for (int j = 0; j < n; ++j) {
+                    if (matriz[i][j] < min1) {
+                        min2 = min1;
+                        min1 = matriz[i][j];
+                        break;
+                    }
+                    else if (matriz[i][j] < min2 && matriz[i][j] != min1) {
+                        min2 = matriz[i][j];
+                    }
+                }
+                curr_bound += (min1 + min2) / 2;
+            }
+        }
+
+        // si el costo del recorrido es mayor o igual al costo m�nimo, detener la exploraci�n
+        if (curr_bound + curr_weight >= costoMinimo)
+            return;
+
+        for (int i = 0; i < n; ++i) {
+            if (matriz[ruta[level - 1]][i] != 0 && !visitado[i]) {
+                curr_weight += matriz[ruta[level - 1]][i];
+                ruta.push_back(i); // se agrega el nodo a la ruta
+                visitado[i] = true; // se guarda como visitado
+                tspSolucion(curr_bound, curr_weight, level + 1);
+
+                // Deshacer los cambios
+                curr_weight -= matriz[ruta[level - 1]][i];
+                ruta.pop_back();
+                visitado[i] = false;
+            }
+        }
+    }
+
+
+
+
+    int get_min_cost() const {
+        return costoMinimo;
+    }
+
+    const vector<int>& getRuta() const {
+        return rutaFinal;
+    }
+};
+
+// Leer matriz de adyacencia desde un archivo de texto
+vector<vector<int>> read_matrix_from_file(const string& file_path) {
+    ifstream file(file_path);
+    int size;
+    file >> size;
+    vector<vector<int>> matriz(size, vector<int>(size));
+    for (int i = 0; i < size; ++i)
+        for (int j = 0; j < size; ++j)
+            file >> matriz[i][j];
+    return matriz;
+}
+
+// Imprimir ruta de TSP
+void print_path(const vector<int>& ruta) {
+    for (int i = 0; i < ruta.size(); ++i) {
+        cout << static_cast<char>('A' + ruta[i]);
+        if (i < ruta.size() - 1)
+            cout << " -> ";
+    }
+    cout << endl;
 }
 
 int main() {
     Graph g(7);
 
     g.readFromFile("in.txt");
+    
     g.kruskalMST();
-    g.printMatrix();
+    vector<vector<int>> matriz = g.adjMatrix;
+    TSP tsp(matriz);
+    tsp.tsp_branch_and_bound();
+    cout << "Minimum cost: " << tsp.get_min_cost() << endl;
+    cout << "Path: ";
+    print_path(tsp.getRuta());
+    cout << "Flujo máximo: " << g.edmondsKarp() << endl;
     g.voronoi();
-
-    std::cout << "Flujo máximo: " << g.edmondsKarp() << std::endl;
 
     return 0;
 }
