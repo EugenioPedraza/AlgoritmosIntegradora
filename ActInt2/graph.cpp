@@ -563,15 +563,26 @@ int main() {
     Graph g(7);
 
     g.readFromFile("in.txt");
+    cout << "\n" << endl;
     
+    cout << "Parte 1:" << endl;
     g.kruskalMST();
+
+    cout << "\n" << endl;
+    cout << "Parte 2:" << endl;
     vector<vector<int>> matriz = g.adjMatrix;
     TSP tsp(matriz);
     tsp.tsp_branch_and_bound();
     cout << "Minimum cost: " << tsp.get_min_cost() << endl;
     cout << "Path: ";
     print_path(tsp.getRuta());
+
+    cout << "\n" << endl;
+    cout << "Parte 3:" << endl;
     cout << "Flujo máximo: " << g.edmondsKarp() << endl;
+
+    cout << "\n" << endl;
+    cout << "Parte 4:" << endl;
     g.voronoi();
 
     return 0;

@@ -29,6 +29,7 @@ private:
 
 public:
     std::vector<std::vector<int>> adjMatrix, directedGraph;
+    
     // Constructor
     Graph(int vertexCount);
 
