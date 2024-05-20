@@ -12,9 +12,9 @@ Graph::Graph(int vertexCount) {
     directedGraph.resize(vertexCount, std::vector<int>(vertexCount, std::numeric_limits<int>::max()));
 }
 
-void Graph::addEdge(int row, int column, int weight) {
-    adjMatrix[row][column] = weight;
-    adjMatrix[column][row] = weight;
+void Graph::addEdge(int row, int column, int weight, std::vector<std::vector<int>> &matrix) {
+    matrix[row][column] = weight;
+    matrix[column][row] = weight;
     edges.push_back({row, column, weight});
 }
 
@@ -149,9 +149,9 @@ void Graph::readFromFile(std::string filename) {
     std::ifstream input(filename);
     std::string line;
 
-    std::queue<std::vector<std::vector<int>>> matrixQueue;
-    matrixQueue.push(adjMatrix);
-    matrixQueue.push(directedGraph);
+    std::queue<std::vector<std::vector<int>>*> matrixQueue;
+    matrixQueue.push(&adjMatrix);
+    matrixQueue.push(&directedGraph);
 
     if (input.is_open()) {
         int counter = 0;
@@ -189,7 +189,10 @@ void Graph::readFromFile(std::string filename) {
                     row.push_back(value);
                 }
 
-                matrixQueue.front()[counter - 1] = row;
+                for (int i = 0; i < row.size(); ++i) {
+                    addEdge(counter - 1, i, row[i], *matrixQueue.front());
+                }
+
                 std::cout << std::endl;
             }
         }
@@ -203,6 +206,8 @@ int main() {
     Graph g(7);
 
     g.readFromFile("in.txt");
+    g.kruskalMST();
+    g.printMatrix();
 
     return 0;
 }

@@ -32,7 +32,7 @@ public:
     Graph(int vertexCount);
 
     // Métodos CRUD
-    void addEdge(int row, int column, int weight);
+    void addEdge(int row, int column, int weight, std::vector<std::vector<int>> &matrix);
     void printMatrix();
 
     // Encontrar MST usando Kruskal
