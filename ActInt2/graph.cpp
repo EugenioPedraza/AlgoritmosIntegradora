@@ -173,7 +173,7 @@ void Graph::readFromFile(std::string filename) {
                 char extraCharacters;
 
                 if (iss >> extraCharacters >> first >> extraCharacters >> second >> extraCharacters) {
-                    //std::cout << "(" << first << "," << second << ")" << std::endl;
+                    std::cout << "(" << first << "," << second << ")" << std::endl;
                     coordinates.push_back({first, second});
                 } else {
                     std::cerr << "Error al leer el archivo" << std::endl;
@@ -185,14 +185,14 @@ void Graph::readFromFile(std::string filename) {
                 int value;
 
                 while (iss >> value) {
-                    //std::cout << value << " ";
+                    std::cout << value << " ";
                     row.push_back(value);
                 }
 
                 for (int i = 0; i < row.size(); ++i) {
-                    addEdge(counter - 1, i, row[i], *matrixQueue.front());
-
-                    std::cout << counter - 1 <<", " << i << ", " << row[i] << std::endl;
+                    if (row[i] != 0 && row[i] != std::numeric_limits<int>::max()) {
+                        addEdge(counter - 1, i, row[i], *matrixQueue.front());
+                    }
                 }
 
                 std::cout << std::endl;
