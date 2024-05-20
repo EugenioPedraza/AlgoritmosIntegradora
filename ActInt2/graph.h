@@ -39,7 +39,7 @@ public:
     void kruskalMST();
 
     // Algoritmo de Ford Fulkerson de flujo máximo
-    int edmondsKarp(int source, int sink);
+    int edmondsKarp();
 
     void readFromFile(std::string filename);
 

@@ -8,8 +8,8 @@
 Graph::Graph(int vertexCount) {
     this->vertexCount = vertexCount;
 
-    adjMatrix.resize(vertexCount, std::vector<int>(vertexCount, std::numeric_limits<int>::max()));
-    directedGraph.resize(vertexCount, std::vector<int>(vertexCount, std::numeric_limits<int>::max()));
+    adjMatrix.resize(vertexCount, std::vector<int>(vertexCount, 0));
+    directedGraph.resize(vertexCount, std::vector<int>(vertexCount, 0));
 }
 
 void Graph::addEdge(int row, int column, int weight, std::vector<std::vector<int>> &matrix) {
@@ -106,10 +106,14 @@ int Graph::bfs(std::vector<std::vector<int>>& rGraph, int s, int t, std::vector<
     return false;
 }
 
-int Graph::edmondsKarp(int source, int sink) {
-    std::vector<std::vector<int>> rGraph = adjMatrix;
+int Graph::edmondsKarp() {
+    std::vector<std::vector<int>> rGraph = directedGraph;
     std::vector<int> parent(vertexCount);
     int maxFlow = 0;
+
+    // Use the first node as the source and the last node as the sink
+    int source = 0;
+    int sink = vertexCount - 1;
 
     while (bfs(rGraph, source, sink, parent)) {
         int pathFlow = std::numeric_limits<int>::max();
@@ -124,6 +128,8 @@ int Graph::edmondsKarp(int source, int sink) {
             rGraph[u][v] -= pathFlow;
             rGraph[v][u] += pathFlow;
         }
+
+        maxFlow += pathFlow;
     }
 
     return maxFlow;
@@ -133,7 +139,7 @@ int Graph::edmondsKarp(int source, int sink) {
 void Graph::printMatrix() {
     for (auto row : adjMatrix) {
         for (auto column : row) {
-            if (column == std::numeric_limits<int>::max())
+            if (column == 0)
                 std::cout << "0 ";
             else
                 std::cout << column << " ";
@@ -210,6 +216,8 @@ int main() {
     g.readFromFile("in.txt");
     g.kruskalMST();
     g.printMatrix();
+
+    std::cout << "Flujo máximo: " << g.edmondsKarp() << std::endl;
 
     return 0;
 }
