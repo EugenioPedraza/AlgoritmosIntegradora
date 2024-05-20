@@ -1,4 +1,13 @@
-// graph.cpp
+/* 
+Actividad Integreadora #2
+
+Eugenio Pedraza A00835064
+Sebastian Rosas A01233989
+Rodrigo de Luna A01384318
+
+04/16/2024
+
+*/
 
 #include "graph.h"
 #include <algorithm>
@@ -8,7 +17,7 @@ using namespace std;
 
 struct PairFloatComparator {
     bool operator()(const pair<float, float>& a, const pair<float, float>& b) const {
-        float epsilon = 0.0001f; // or a suitable small number
+        float epsilon = 0.0001f; // o un número pequeño adecuado
         return abs(a.first - b.first) < epsilon && abs(a.second - b.second) < epsilon;
     }
 
@@ -20,7 +29,7 @@ struct PairFloatComparator {
 };
 
 bool operator==(const pair<float, float>& a, const pair<float, float>& b) {
-    float epsilon = 0.0001f; // or a suitable small number
+    float epsilon = 0.0001f; // o un número pequeño adecuado
     return abs(a.first - b.first) < epsilon && abs(a.second - b.second) < epsilon;
 }
 
@@ -97,7 +106,7 @@ void Graph::kruskalMST() {
 
 /// MARK: - Algoritmo de Edmonds Karp, parte 3
 int Graph::bfs(vector<vector<int>>& rGraph, int s, int t, vector<int>& parent) {
-    // Checlist to check if a node has already been visited, all fields are initialized to false
+    // Lista de verificación para comprobar si un nodo ya ha sido visitado, todos los campos están inicializados en falso
     vector<bool> visited(rGraph.size(), false);
     queue<int> q;
 
@@ -131,7 +140,7 @@ int Graph::edmondsKarp() {
     vector<int> parent(vertexCount);
     int maxFlow = 0;
 
-    // Use the first node as the source and the last node as the sink
+    // Usar el primer nodo como la fuente y el último nodo como el sumidero
     int source = 0;
     int sink = vertexCount - 1;
 
@@ -256,7 +265,7 @@ void Graph::voronoi() {
 }
 
 
-/// MARK: - Remove duplicates
+/// MARK: - Eliminar duplicados
 void Graph::removeDuplicates(vector<pair<float, float>>& coordinates) {
     sort(coordinates.begin(), coordinates.end());
     coordinates.erase(unique(coordinates.begin(), coordinates.end(), PairFloatComparator()), coordinates.end());
@@ -277,7 +286,7 @@ void Graph::printMatrix() {
 }
 
 
-/// MARK: - Read from file function
+/// MARK: - Leer desde archivo
 void Graph::readFromFile(string filename) {
     cout << "Leyendo archivo " << filename << endl;
     ifstream input(filename);
@@ -339,22 +348,22 @@ void Graph::readFromFile(string filename) {
 
 bool Graph::isInside(const vector<pair<float, float>>& polygon, pair<float, float> point) {
     int n = polygon.size();
-    if (n < 3) return false;  // A polygon must have at least 3 vertices
+    if (n < 3) return false;  // Un polígono debe tener al menos 3 vértices
 
-    // Create a point for line segment from p to infinite
+    // Crear un punto para el segmento de línea desde p hasta infinito
     pair<float, float> extreme = {INT_MAX, point.second};
 
-    // Count intersections of the above line with sides of polygon
+    // Contar las intersecciones de la línea anterior con los lados del polígono
     int count = 0, i = 0;
     do {
         int next = (i + 1) % n;
 
-        // Check if the line segment from 'p' to 'extreme' intersects
-        // with the line segment from 'polygon[i]' to 'polygon[next]'
+        // Verificar si el segmento de línea desde 'p' hasta 'extreme' se intersecta
+        // con el segmento de línea desde 'polygon[i]' hasta 'polygon[next]'
         if (doIntersect(polygon[i], polygon[next], point, extreme)) {
-            // If the point 'p' is colinear with line segment 'i-next',
-            // then check if it lies on segment. If it lies, return true,
-            // otherwise false
+            // Si el punto 'p' es colineal con el segmento de línea 'i-next',
+            // entonces verificar si está en el segmento. Si lo está, devolver verdadero,
+            // de lo contrario falso
             if (orientation(polygon[i], point, polygon[next]) == 0)
                 return onSegment(polygon[i], point, polygon[next]);
 
@@ -363,13 +372,13 @@ bool Graph::isInside(const vector<pair<float, float>>& polygon, pair<float, floa
         i = next;
     } while (i != 0);
 
-    // Return true if count is odd, false otherwise
+    // Devolver verdadero si el conteo es impar, falso en caso contrario
     return count & 1;
 }
 
 pair<float, float> Graph::findCenter(vector<pair<float, float>> coordinates) {
     for (int i = 0; i < coordinates.size(); ++i) {
-        // Create a polygon without the i-th point
+        // Crear un polígono sin el i-ésimo punto
         vector<pair<float, float>> polygon;
         for (int j = 0; j < coordinates.size(); ++j) {
             if (j != i) {
@@ -377,16 +386,17 @@ pair<float, float> Graph::findCenter(vector<pair<float, float>> coordinates) {
             }
         }
 
-        // Check if the i-th point is inside the polygon
+        // Verificar si el i-ésimo punto está dentro del polígono
         if (isInside(polygon, coordinates[i])) {
             return coordinates[i];
         }
     }
 
-    // No point is inside the polygon
+    // Ningún punto está dentro del polígono
     return {-1, -1};
 }
-// Given three colinear points p, q, r, the function checks if point q lies on line segment 'pr'
+
+// Dado tres puntos colineales p, q, r, la función verifica si el punto q se encuentra en el segmento de línea 'pr'
 bool Graph::onSegment(pair<float, float> p, pair<float, float> q, pair<float, float> r) {
     if (q.first <= max(p.first, r.first) && q.first >= min(p.first, r.first) &&
         q.second <= max(p.second, r.second) && q.second >= min(p.second, r.second))
@@ -394,43 +404,43 @@ bool Graph::onSegment(pair<float, float> p, pair<float, float> q, pair<float, fl
     return false;
 }
 
-// To find orientation of ordered triplet (p, q, r).
-// The function returns following values
-// 0 --> p, q and r are colinear
-// 1 --> Clockwise
-// 2 --> Counterclockwise
+// Para encontrar la orientación del triplete ordenado (p, q, r).
+// La función devuelve los siguientes valores
+// 0 --> p, q y r son colineales
+// 1 --> En el sentido de las agujas del reloj
+// 2 --> En sentido contrario a las agujas del reloj
 int Graph::orientation(pair<float, float> p, pair<float, float> q, pair<float, float> r) {
     float val = (q.second - p.second) * (r.first - q.first) - (q.first - p.first) * (r.second - q.second);
-    if (val == 0) return 0;  // colinear
-    return (val > 0) ? 1 : 2; // clock or counterclock wise
+    if (val == 0) return 0;  // colineales
+    return (val > 0) ? 1 : 2; // en el sentido de las agujas del reloj o en sentido contrario
 }
 
-// The function that returns true if line segment 'p1q1' and 'p2q2' intersect.
+// La función que devuelve verdadero si el segmento de línea 'p1q1' y 'p2q2' se intersectan.
 bool Graph::doIntersect(pair<float, float> p1, pair<float, float> q1, pair<float, float> p2, pair<float, float> q2) {
-    // Find the four orientations needed for general and special cases
+    // Encontrar las cuatro orientaciones necesarias para los casos generales y especiales
     int o1 = orientation(p1, q1, p2);
     int o2 = orientation(p1, q1, q2);
     int o3 = orientation(p2, q2, p1);
     int o4 = orientation(p2, q2, q1);
 
-    // General case
+    // Caso general
     if (o1 != o2 && o3 != o4)
         return true;
 
-    // Special Cases
-    // p1, q1 and p2 are colinear and p2 lies on segment p1q1
+    // Casos especiales
+    // p1, q1 y p2 son colineales y p2 se encuentra en el segmento p1q1
     if (o1 == 0 && onSegment(p1, p2, q1)) return true;
 
-    // p1, q1 and q2 are colinear and q2 lies on segment p1q1
+    // p1, q1 y q2 son colineales y q2 se encuentra en el segmento p1q1
     if (o2 == 0 && onSegment(p1, q2, q1)) return true;
 
-    // p2, q2 and p1 are colinear and p1 lies on segment p2q2
+    // p2, q2 y p1 son colineales y p1 se encuentra en el segmento p2q2
     if (o3 == 0 && onSegment(p2, p1, q2)) return true;
 
-    // p2, q2 and q1 are colinear and q1 lies on segment p2q2
+    // p2, q2 y q1 son colineales y q1 se encuentra en el segmento p2q2
     if (o4 == 0 && onSegment(p2, q1, q2)) return true;
 
-    return false; // Doesn't fall in any of the above cases
+    return false; // No cae en ninguno de los casos anteriores
 }
 
 double Graph::distanceToMidpoint(const pair<float, float>& point, const vector<pair<float, float>>& points) {
@@ -453,7 +463,7 @@ double Graph::distance(const pair<float, float>& p1, const pair<float, float>& p
     return sqrt(dx * dx + dy * dy);
 }
 
-//TSP
+// TSP
 const int INF = numeric_limits<int>::max();
 
 class TSP {
@@ -474,10 +484,10 @@ public:
         tspSolucion(0, 0, 1);
     }
 
-    //Complejidad O(N!)
+    // Complejidad O(N!)
     void tspSolucion(int curr_bound, int curr_weight, int level) {
         if (level == n) {
-            if (matriz[ruta[level - 1]][ruta[0]] != 0) { // se comprueba que la ruta es valida
+            if (matriz[ruta[level - 1]][ruta[0]] != 0) { // se comprueba que la ruta es válida
                 int curr_res = curr_weight + matriz[ruta[level - 1]][ruta[0]];
                 if (curr_res < costoMinimo) {
                     costoMinimo = curr_res;
@@ -488,7 +498,7 @@ public:
             return;
         }
 
-        // Calcular el l�mite inferior para el siguiente nivel
+        // Calcular el límite inferior para el siguiente nivel
         for (int i = 0; i < n; ++i) {
             if (!visitado[i]) {
                 int min1 = INF, min2 = INF;
@@ -506,7 +516,7 @@ public:
             }
         }
 
-        // si el costo del recorrido es mayor o igual al costo m�nimo, detener la exploraci�n
+        // si el costo del recorrido es mayor o igual al costo mínimo, detener la exploración
         if (curr_bound + curr_weight >= costoMinimo)
             return;
 
@@ -524,9 +534,6 @@ public:
             }
         }
     }
-
-
-
 
     int get_min_cost() const {
         return costoMinimo;
