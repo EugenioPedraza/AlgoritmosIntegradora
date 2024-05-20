@@ -3,6 +3,23 @@
 #include "graph.h"
 #include <algorithm>
 #include <iostream> 
+struct PairFloatComparator {
+    bool operator()(const std::pair<float, float>& a, const std::pair<float, float>& b) const {
+        float epsilon = 0.0001f; // or a suitable small number
+        return std::abs(a.first - b.first) < epsilon && std::abs(a.second - b.second) < epsilon;
+    }
+
+    std::size_t operator()(const std::pair<float, float>& a) const {
+        auto h1 = std::hash<float>{}(a.first);
+        auto h2 = std::hash<float>{}(a.second);
+        return h1 ^ h2;
+    }
+};
+
+bool operator==(const std::pair<float, float>& a, const std::pair<float, float>& b) {
+    float epsilon = 0.0001f; // or a suitable small number
+    return std::abs(a.first - b.first) < epsilon && std::abs(a.second - b.second) < epsilon;
+}
 
 // Constructor
 Graph::Graph(int vertexCount) {
@@ -170,33 +187,21 @@ std::pair<float, float> Graph::getIntersection(std::pair<float, float> lineA, st
     float x = (lineB.second - lineA.second) / (lineA.first - lineB.first);
     float y = lineA.first * x + lineA.second;
 
+    x = roundToTwoDecimals(x);
+    y = roundToTwoDecimals(y);
+
     return {x, y};
 }
 
-// 5. Consultar el área de Voronoi
-bool Graph::rayCast(const std::vector<std::pair<float, float>>& polygon, std::pair<float, float> intersection) {
-    bool inside = false;
-    int n = polygon.size();
-
-    for (int i = 0, j = n - 1; i < n; j = i++) {
-        if (((polygon[i].second > intersection.second) != (polygon[j].second > intersection.second)) &&
-            (intersection.first < (polygon[j].first - polygon[i].first) * (intersection.second - polygon[i].second) / (polygon[j].second - polygon[i].second) + polygon[i].first)) {
-            inside = !inside;
-        }
-    }
-
-    return inside;
+float Graph::roundToTwoDecimals(float var) {
+    float value = (int)(var * 100 + .5);
+    return (float)value / 100;
 }
 
 
 
 // 6. Calcular el área de Voronoi
 void Graph::voronoi() {
-    // Ordenamos los puntos en sentido horario
-    for (const auto& point : coordinates) {
-        std::cout << "(" << point.first << ", " << point.second << ")" << std::endl;
-    }
-
     // Calculamos las mediatrices
     std::vector<std::pair<double, double>> mediatrixes;
     for (int i = 0; i < coordinates.size(); ++i) {
@@ -213,25 +218,45 @@ void Graph::voronoi() {
         }
     }
 
+    std::sort(coordinates.begin(), coordinates.end());
+    
+
+    // Ordenamos las intersecciones según su distancia al punto medio entre dos puntos
+    std::sort(intersections.begin(), intersections.end(), [&](const auto& a, const auto& b) {
+        double distA = distanceToMidpoint(a, coordinates);
+        double distB = distanceToMidpoint(b, coordinates);
+        return distA < distB;
+    });
+
+    std::pair<float, float> pivot = findCenter(coordinates);
+
+    std::vector<std::pair<float, float>> filteredIntersections;
     for (const auto& intersection : intersections) {
-        std::cout << "Intersección: (" << intersection.first << ", " << intersection.second << ")" << std::endl;
+        double distToPivot = distance(intersection, pivot);
+        if (distToPivot < 10.0) { // Ajusta este valor según tu criterio
+            filteredIntersections.push_back(intersection);
+        }
+    }
+
+    // Almacena las intersecciones filtradas en una estructura de datos, como un mapa
+    std::map<std::pair<float, float>, int> voronoiPolygons;
+    for (const auto& intersection : filteredIntersections) {
+        voronoiPolygons[intersection] += 1;
+    }
+
+    // Imprime las intersecciones filtradas
+    for (auto element:voronoiPolygons) {
+        if (element.second >= 3) {
+            std::cout << "(" << element.first.first << ", " << element.first.second << ") " << element.second << std::endl;
+        }
     }
 }
 
-/// MARK: - Sort coordinates clockwise
-void Graph::sortCoordinates(std::vector<std::pair<float, float>>& coordinates) {
-    float centroidX = 0, centroidY = 0;
-    for (const auto& point : coordinates) {
-        centroidX += point.first;
-        centroidY += point.second;
-    }
-    centroidX /= coordinates.size();
-    centroidY /= coordinates.size();
 
-    std::sort(coordinates.begin(), coordinates.end(),
-              [centroidX, centroidY](const std::pair<float, float>& a, const std::pair<float, float>& b) {
-                  return atan2(a.second - centroidY, a.first - centroidX) > atan2(b.second - centroidY, b.first - centroidX);
-              });
+/// MARK: - Remove duplicates
+void Graph::removeDuplicates(std::vector<std::pair<float, float>>& coordinates) {
+    std::sort(coordinates.begin(), coordinates.end());
+    coordinates.erase(std::unique(coordinates.begin(), coordinates.end(), PairFloatComparator()), coordinates.end());
 }
 
 /// MARK: - Función para imprimir la matriz de adyacencia
@@ -247,6 +272,7 @@ void Graph::printMatrix() {
         std::cout << std::endl;
     }
 }
+
 
 /// MARK: - Read from file function
 void Graph::readFromFile(std::string filename) {
@@ -308,6 +334,121 @@ void Graph::readFromFile(std::string filename) {
     }
 }
 
+bool Graph::isInside(const std::vector<std::pair<float, float>>& polygon, std::pair<float, float> point) {
+    int n = polygon.size();
+    if (n < 3) return false;  // A polygon must have at least 3 vertices
+
+    // Create a point for line segment from p to infinite
+    std::pair<float, float> extreme = {INT_MAX, point.second};
+
+    // Count intersections of the above line with sides of polygon
+    int count = 0, i = 0;
+    do {
+        int next = (i + 1) % n;
+
+        // Check if the line segment from 'p' to 'extreme' intersects
+        // with the line segment from 'polygon[i]' to 'polygon[next]'
+        if (doIntersect(polygon[i], polygon[next], point, extreme)) {
+            // If the point 'p' is colinear with line segment 'i-next',
+            // then check if it lies on segment. If it lies, return true,
+            // otherwise false
+            if (orientation(polygon[i], point, polygon[next]) == 0)
+                return onSegment(polygon[i], point, polygon[next]);
+
+            count++;
+        }
+        i = next;
+    } while (i != 0);
+
+    // Return true if count is odd, false otherwise
+    return count & 1;
+}
+
+std::pair<float, float> Graph::findCenter(std::vector<std::pair<float, float>> coordinates) {
+    for (int i = 0; i < coordinates.size(); ++i) {
+        // Create a polygon without the i-th point
+        std::vector<std::pair<float, float>> polygon;
+        for (int j = 0; j < coordinates.size(); ++j) {
+            if (j != i) {
+                polygon.push_back(coordinates[j]);
+            }
+        }
+
+        // Check if the i-th point is inside the polygon
+        if (isInside(polygon, coordinates[i])) {
+            return coordinates[i];
+        }
+    }
+
+    // No point is inside the polygon
+    return {-1, -1};
+}
+// Given three colinear points p, q, r, the function checks if point q lies on line segment 'pr'
+bool Graph::onSegment(std::pair<float, float> p, std::pair<float, float> q, std::pair<float, float> r) {
+    if (q.first <= std::max(p.first, r.first) && q.first >= std::min(p.first, r.first) &&
+        q.second <= std::max(p.second, r.second) && q.second >= std::min(p.second, r.second))
+        return true;
+    return false;
+}
+
+// To find orientation of ordered triplet (p, q, r).
+// The function returns following values
+// 0 --> p, q and r are colinear
+// 1 --> Clockwise
+// 2 --> Counterclockwise
+int Graph::orientation(std::pair<float, float> p, std::pair<float, float> q, std::pair<float, float> r) {
+    float val = (q.second - p.second) * (r.first - q.first) - (q.first - p.first) * (r.second - q.second);
+    if (val == 0) return 0;  // colinear
+    return (val > 0) ? 1 : 2; // clock or counterclock wise
+}
+
+// The function that returns true if line segment 'p1q1' and 'p2q2' intersect.
+bool Graph::doIntersect(std::pair<float, float> p1, std::pair<float, float> q1, std::pair<float, float> p2, std::pair<float, float> q2) {
+    // Find the four orientations needed for general and special cases
+    int o1 = orientation(p1, q1, p2);
+    int o2 = orientation(p1, q1, q2);
+    int o3 = orientation(p2, q2, p1);
+    int o4 = orientation(p2, q2, q1);
+
+    // General case
+    if (o1 != o2 && o3 != o4)
+        return true;
+
+    // Special Cases
+    // p1, q1 and p2 are colinear and p2 lies on segment p1q1
+    if (o1 == 0 && onSegment(p1, p2, q1)) return true;
+
+    // p1, q1 and q2 are colinear and q2 lies on segment p1q1
+    if (o2 == 0 && onSegment(p1, q2, q1)) return true;
+
+    // p2, q2 and p1 are colinear and p1 lies on segment p2q2
+    if (o3 == 0 && onSegment(p2, p1, q2)) return true;
+
+    // p2, q2 and q1 are colinear and q1 lies on segment p2q2
+    if (o4 == 0 && onSegment(p2, q1, q2)) return true;
+
+    return false; // Doesn't fall in any of the above cases
+}
+
+double Graph::distanceToMidpoint(const std::pair<float, float>& point, const std::vector<std::pair<float, float>>& points) {
+    double minDistance = std::numeric_limits<double>::max();
+    for (int i = 0; i < points.size(); ++i) {
+        for (int j = i + 1; j < points.size(); ++j) {
+            std::pair<float, float> midpoint = getCenterPoint(points[i], points[j]);
+            double dist = distance(point, midpoint);
+            if (dist < minDistance) {
+                minDistance = dist;
+            }
+        }
+    }
+    return minDistance;
+}
+
+double Graph::distance(const std::pair<float, float>& p1, const std::pair<float, float>& p2) {
+    float dx = p2.first - p1.first;
+    float dy = p2.second - p1.second;
+    return sqrt(dx * dx + dy * dy);
+}
 
 int main() {
     Graph g(7);
@@ -321,4 +462,3 @@ int main() {
 
     return 0;
 }
-
